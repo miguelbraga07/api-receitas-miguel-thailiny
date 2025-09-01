@@ -106,11 +106,13 @@ receitas = [
     }
 ]
 
-@app.get("/")
-def hello():
-    return{"title":"Livro de Receitas"}
+@app.get("/receitas")
+def listar_receitas():
+    return receitas
 
-def get_receita(nome: str):
-    for receita in receitas:
-        if receita["nome"].lower() == nome.lower():
-            return receita
+@app.get("/receitas/{nome}")
+def buscar_receitas (nome: str):
+    for receitas in receitas:
+        if receitas['nome'].lower()==nome.lower():
+            return receitas
+            return {"erro":"Receita nao encontrada"}    
