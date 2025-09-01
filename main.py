@@ -1,9 +1,6 @@
 from fastapi import FastAPI
 app = FastAPI()
 
-@app.get("/")
-def root():
-    return {"msg": "Testando o API"}
 
 
 receitas = [
@@ -113,5 +110,7 @@ receitas = [
 def hello():
     return{"title":"Livro de Receitas"}
 
-@app.get("/receitas{receita}")
-def get_receita():
+def get_receita(nome: str):
+    for receita in receitas:
+        if receita["nome"].lower() == nome.lower():
+            return receita
