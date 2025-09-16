@@ -98,10 +98,4 @@ def deletar_receita(id: int):
         if receitas[i].id == id:
          receitas.pop(i)
          return {"mensagem": "receita deletada"}
-    for i in range(len(receitas)):
-        if receitas[i].id == id:
-            receita_removida = receitas.pop(i)
-            return {
-                "mensagem": "Receita '{receita_removida.nome}' foi excluída com sucesso.",
-                "receita_excluida": receita_removida
-            }
+        
