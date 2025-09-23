@@ -62,3 +62,16 @@ def get_receita_por_id():
             return receita
         return{"mensagem": "Receita não encontrada"}
     
+@app.put("/receitas/{id}")
+def update_receita(id: int,dados: CreateReceita):
+    for i in range(len(receitas)):
+        if receitas[i].id == id:
+            receita_atualizada = Receita(
+                id=id,
+                nome=dados.nome,
+                ingredientes=dados.ingredientes,
+                modo_de_preparo=dados.modo_de_preparo,
+            )
+            receitas[i] = (receita_atualizada)
+            return receita_atualizada
+        return {"mensagem:": "receita nao encontrada"}
