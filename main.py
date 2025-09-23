@@ -75,3 +75,18 @@ def update_receita(id: int,dados: CreateReceita):
             receitas[i] = (receita_atualizada)
             return receita_atualizada
         return {"mensagem:": "receita nao encontrada"}
+    
+    receita = ["brownie", "arroz", "vitamina de morango", "bolo de cenoura", "pudim", "brigadeiro"]
+
+    def editar_nome(nome_atual, nome_alterado):
+        if nome_alterado in receitas:
+            return {"já existe"}
+        for i in range (len(receitas)):
+            if receitas[i] == nome_atual:
+                receitas[i] == nome_alterado
+            return {"nome modificado"}
+        return {"receita não encontrada"}
+    def editar_receita(nome, ingredientes, modo_de_preparo):
+        if nome == "" or ingredientes == "" or modo_de_preparo == "":
+          return{"campos vazios nao sao salvos"}
+        return {"receita foi editada"}
