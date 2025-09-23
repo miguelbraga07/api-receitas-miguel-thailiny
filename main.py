@@ -101,4 +101,3 @@ def deletar_receita(id: int):
                 "mensagem": f"Receita '{receita_removida.nome}' foi excluída com sucesso.",
                 "receita_excluida": receita_removida
             }
-    raise HTTPException(status_code=404, detail="Receita não encontrada.")
