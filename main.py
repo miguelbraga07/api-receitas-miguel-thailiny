@@ -85,12 +85,13 @@ def update_receita(id: int,dados: CreateReceita):
             if receitas[i] == nome_atual:
                 receitas[i] == nome_alterado
             return {"nome modificado"}
-        return {"receita não encontrada"}
-    def editar_receita(nome, ingredientes, modo_de_preparo):
-        if nome == "" or ingredientes == "" or modo_de_preparo == "":
-          return{"campos vazios nao sao salvos"}
-        return {"receita foi editada"}
-    
+    return {"receita não encontrada"}
+
+def editar_receita(nome, ingredientes, modo_de_preparo):
+    if nome == "" or ingredientes == "" or modo_de_preparo == "":
+        return {"Campos vazios não são salvos"}
+    return {"receita foi editada"}
+
 @app.delete("/receitas/{id}")
 def deletar_receita(id: int):
     for i in range(len(receitas)):
@@ -100,5 +101,4 @@ def deletar_receita(id: int):
                 "mensagem": f"Receita '{receita_removida.nome}' foi excluída com sucesso.",
                 "receita_excluida": receita_removida
             }
-            
-            raise HTTPException(status_code=404, detail="Receita não encontrada.")
+    raise HTTPException(status_code=404, detail="Receita não encontrada.")
