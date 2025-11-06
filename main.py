@@ -1,23 +1,11 @@
-from fastapi import FastAPI
+from http import HTTPStatus
+from fastapi import FastAPI, HTTPException 
 app = FastAPI()
+from .schema import CreateReceita, Receita
 
-from pydantic import BaseModel
-from typing import List
+receitas: list[Receita] = []
 
-class CreateReceita(BaseModel):
-    nome: str
-    ingredientes: List[str]
-    modo_de_preparo: str
-
-class Receita(BaseModel):
-    id: int
-    nome: str
-    ingredientes: List[str]
-    modo_de_preparo: str
-
-receitas: List[Receita] = []
-
-@app.get("/receitas")
+@app.get("/receitas", response_model=list[Receita], status_code=HTTPStatus.OK)
 def get_todas_receitas():
     return receitas
 
@@ -26,7 +14,7 @@ def hello():
     return{"title":"Livro de Receitas"}
 
 
-@app.get("/receitas/{nome_receita}")
+@app.get("/receitas/{nome_receita}",  response_model=Receita, status_code=HTTPStatus.OK)
 def get_receita_por_nome (nome_receita: str):
     for receita in receitas:
         if receita.nome == nome_receita:
@@ -36,7 +24,7 @@ def get_receita_por_nome (nome_receita: str):
 
 
 
-@app.post("/receitas", response_model=Receita)
+@app.post("/receitas", response_model=Receita, status_code=HTTPStatus.CREATED)
 def criar_receita(receita: CreateReceita):
 
     if len(receitas) == 0:
@@ -55,14 +43,14 @@ def criar_receita(receita: CreateReceita):
 
     return nova_receita
 
-@app.get("/receitas/id/{id}")
+@app.get("/receitas/id/{id}", response_model=Receita, status_code=HTTPStatus.OK)
 def get_receita_por_id(id:int):
     for receita in receitas:
         if receita.id == id:
             return receita
     return{"mensagem": "Receita não encontrada"}
     
-@app.put("/receitas/{id}")
+@app.put("/receitas/{id}", response_model=Receita, status_code=HTTPStatus.OK)
 def update_receita(id: int, dados: CreateReceita):
     for i in range(len(receitas)):
         if receitas[i].id == id:
@@ -77,7 +65,7 @@ def update_receita(id: int, dados: CreateReceita):
     return {"mensagem:": "receita nao encontrada"}
     
   
-@app.delete("/receitas/{id}")
+@app.delete("/receitas/{id}",  response_model=Receita, status_code=HTTPStatus.OK)
 def deletar_receita(id: int):
     for i in range(len(receitas)):
         if receitas[i].id == id:
