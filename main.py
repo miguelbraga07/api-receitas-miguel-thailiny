@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException 
 app = FastAPI()
-from .schema import CreateReceita, Receita
+from schema import CreateReceita, Receita
 
 receitas: list[Receita] = []
 
@@ -20,10 +20,8 @@ def get_receita_por_nome (nome_receita: str):
         if receita.nome == nome_receita:
             return receita
         
-    return {"receita não encontrada"}
-
-
-
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Receita não encontrada")
+    
 @app.post("/receitas", response_model=Receita, status_code=HTTPStatus.CREATED)
 def criar_receita(receita: CreateReceita):
 
@@ -48,7 +46,7 @@ def get_receita_por_id(id:int):
     for receita in receitas:
         if receita.id == id:
             return receita
-    return{"mensagem": "Receita não encontrada"}
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Receita não encontrada")
     
 @app.put("/receitas/{id}", response_model=Receita, status_code=HTTPStatus.OK)
 def update_receita(id: int, dados: CreateReceita):
@@ -62,13 +60,13 @@ def update_receita(id: int, dados: CreateReceita):
             )
             receitas[i] = (receita_atualizada)
             return receita_atualizada
-    return {"mensagem:": "receita nao encontrada"}
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Receita não encontrada")
     
   
 @app.delete("/receitas/{id}",  response_model=Receita, status_code=HTTPStatus.OK)
 def deletar_receita(id: int):
     for i in range(len(receitas)):
         if receitas[i].id == id:
-         receitas.pop(i)
-    return {"mensagem": "receita deletada"}
+            receita_deletada = receitas.pop(i)
+    return receita_deletada
     
