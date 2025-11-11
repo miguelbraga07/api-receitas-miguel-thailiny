@@ -1,7 +1,10 @@
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException 
 app = FastAPI()
-from schema import CreateReceita, Receita
+from schema import CreateReceita, Receita, BaseUsuario, UsuarioPublic
+
+usuarios: List[Usuario] = []
+receitas: List[Receita] = []
 
 receitas: list[Receita] = []
 
@@ -70,3 +73,5 @@ def deletar_receita(id: int):
             receita_deletada = receitas.pop(i)
     return receita_deletada
     
+@app.post("/usuarios",status_code=HTTPStatus.CREATED, response_model=UsuarioPublic)
+def create_usuario(dados: BaseUsuario):
