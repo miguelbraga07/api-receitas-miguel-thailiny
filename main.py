@@ -1,10 +1,10 @@
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException 
 app = FastAPI()
-from schema import CreateReceita, Receita, BaseUsuario, UsuarioPublic
+from schema import CreateReceita, Receita, Usuario, BaseUsuario, UsuarioPublic
 
-usuarios: List[Usuario] = []
-receitas: List[Receita] = []
+usuarios: list[Usuario] = []
+receitas: list[Receita] = []
 
 receitas: list[Receita] = []
 
@@ -73,5 +73,21 @@ def deletar_receita(id: int):
             receita_deletada = receitas.pop(i)
     return receita_deletada
     
-@app.post("/usuarios",status_code=HTTPStatus.CREATED, response_model=UsuarioPublic)
-def create_usuario(dados: BaseUsuario):
+''' @app.get("/usuarios", status_code=HTTPStatus.OK, response_model=List[UsuarioPublic])
+    def get_todos_usuarios():
+
+ @app.get("/usuarios/{nome_usuario}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
+    def get_usuario_por_nome(nome_usuario: str):
+
+ @app.get("/usuarios/id/{id}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
+    def get_usuario_por_id(id: int):
+
+ @app.post("/usuarios",status_code=HTTPStatus.CREATED, response_model=UsuarioPublic)
+    def create_usuario(dados: BaseUsuario):
+
+ @app.put("usuarios/{id}", response_model=UsuarioPublic, HTTPStatus.OK)
+    def update_usuario(id: int, dados: BaseUsuario):
+
+@app.delete("/usuarios/{id}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
+    def delete_usuario(id: int) '''
+
