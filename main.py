@@ -1,6 +1,10 @@
 from http import HTTPStatus
-from fastapi import FastAPI, HTTPException 
+from fastapi import FastAPI, HTTPException, Depends
 from schema import CreateReceita, Receita, Usuario, BaseUsuario, UsuarioPublic
+from models import User
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from database import get_session
 
 app = FastAPI()
 
@@ -80,7 +84,7 @@ def get_todos_usuarios():
 @app.get("/usuarios/{nome_usuario}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
 def get_usuario_por_nome(nome_usuario: str):
     for usuario in usuarios:
-        if usuario.nome == nome_usuario:
+        if usuario.nome_usuario == nome_usuario:
             return usuario
     raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuario não encontrada")
 
@@ -92,7 +96,33 @@ def get_usuario_por_id(id: int):
   raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuario não encontrada")
 
 @app.post("/usuarios",status_code=HTTPStatus.CREATED, response_model=UsuarioPublic)
-def create_usuario(dados: BaseUsuario):
+def create_usuario(dados: BaseUsuario, session: Session = Depends(get_session)):
+    db_user = session.scalar(
+        select (User).where(
+         (User.nome_usuario == dados.nome_usuario) | (User.email == dados. email)
+        )
+    )
+
+    if db_user:
+        if db_user.nome_usuario == dados.nome_usuario:
+            raise HTTPException(
+                status_code=HTTPEstatus.CONFLICT,
+                detail='Nome de usuário já existe',
+            )
+        elif db_user.email == dados.email:
+            raise HTTPException(
+                status_code=HTTPStatus.CONFLICT,
+                detail= 'Esse email já existe',
+            )
+    db_user= User(
+        nome_usuario=dados.nome_usuario, senha=dados.senha, email=dados.email
+    )
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+
+    return db_user
+
 
     if len(usuarios) == 0:
         novo_id = 1
@@ -107,6 +137,8 @@ def create_usuario(dados: BaseUsuario):
     )
 
     usuarios.append(novo_usuario)
+
+    return novo_usuario
 
 @app.put("usuarios/{id}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
 def update_usuario(id: int, dados: BaseUsuario):
