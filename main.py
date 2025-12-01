@@ -5,13 +5,12 @@ from models import User
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_session
-
+from sqlalchemy.exc import IntegrityError
 app = FastAPI()
 
-usuarios: list[Usuario] = []
-receitas: list[Receita] = []
 
 receitas: list[Receita] = []
+app = FastAPI(tittle='API de receita')
 
 @app.get("/receitas", response_model=list[Receita], status_code=HTTPStatus.OK)
 def get_todas_receitas():
@@ -78,22 +77,31 @@ def deletar_receita(id: int):
     return receita_deletada
     
 @app.get("/usuarios", status_code=HTTPStatus.OK, response_model=list[UsuarioPublic])
-def get_todos_usuarios():
-    return usuarios
+def get_todos_usuarios(
+       skip: int=0, limit: int = 100, session: Session = Depends(get_session)
+):
+    users = session.scalars(select(User).offset(skip).limit(limit)).all()
+        
+    return users
 
 @app.get("/usuarios/{nome_usuario}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
-def get_usuario_por_nome(nome_usuario: str):
-    for usuario in usuarios:
-        if usuario.nome_usuario == nome_usuario:
-            return usuario
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuario não encontrada")
+def get_usuario_por_nome(nome_usuario: str, session: Session = Depends(get_session)):
+    db_user = session.scalar(
+        select(User).where((User.nome_usuario == nome_usuario))
+    )
+    if db_user:
+        return db_user
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuario não encontrado")
 
 @app.get("/usuarios/id/{id}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
-def get_usuario_por_id(id: int):
-  for usuario in usuarios:
-        if usuario.id == id:
-            return usuario
-  raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuario não encontrada")
+def get_usuario_por_id(id: int, session: Session = Depends(get_session)):
+     db_user = session.scalar(
+         select(User).where((User.id == id))
+     )
+     if db_user:
+         return db_user
+ 
+     raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuario não encontrado")
 
 @app.post("/usuarios",status_code=HTTPStatus.CREATED, response_model=UsuarioPublic)
 def create_usuario(dados: BaseUsuario, session: Session = Depends(get_session)):
@@ -106,7 +114,7 @@ def create_usuario(dados: BaseUsuario, session: Session = Depends(get_session)):
     if db_user:
         if db_user.nome_usuario == dados.nome_usuario:
             raise HTTPException(
-                status_code=HTTPEstatus.CONFLICT,
+                status_code=HTTPStatus.CONFLICT,
                 detail='Nome de usuário já existe',
             )
         elif db_user.email == dados.email:
@@ -141,22 +149,36 @@ def create_usuario(dados: BaseUsuario, session: Session = Depends(get_session)):
     return novo_usuario
 
 @app.put("usuarios/{id}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
-def update_usuario(id: int, dados: BaseUsuario):
-     for i in range(len(usuarios)):
-        if usuarios[i].id == id:
-            usuario_atualizado = Usuario(
-                id=id,
-                usuario=dados.usuario_atualizado,
-                senha=dados.senha_atualizada,
-                email=dados.email_atualizado,
-            )
-            usuarios[i] = (usuario_atualizado)
-            return usuario_atualizado
-     raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuario não encontrada")
+def update_usuario(id: int, dados: BaseUsuario, session: Session = Depends(get_session)):
+    
+    db_user = session.scalar(select(User).where(User.id == id))
+    if not db_user:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Usuario nao encontrado'
+        )
+    
+    try:
+        db_user.nome_usuario = dados.nome_usuario
+        db_user.senha = dados.senha
+        db_user.email = dados.email
+        session.commit()
+        session.refresh(db_user)
 
+        return db_user
+    except IntegrityError:
+        raise HTTPException(
+            status_code=HTTPStatus.CONFLICT,
+            detail='Nome de usuario ou email ja existe'
+        )
 @app.delete("/usuarios/{id}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
-def delete_usuario(id: int) :
-   for i in range(len(usuarios)):
-        if usuarios[i].id == id:
-            usuarios_deletada = usuarios.pop(i)
-   return usuarios_deletada
+def delete_usuario(id: int, session: Session = Depends(get_session)) :
+   db_user = session.scalar(select(User).where(User.id == id))
+
+   if not db_user:
+       raise HTTPException(
+           status_code=HTTPStatus.NOT_FOUND, detail='Usuario nao encontrado'
+       )
+   
+   session.delete(db_user)
+   session.commit()
+   return db_user
